@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
-import{auth} from '../firebase/firebase'
-import {createUserWithEmailAndPassword } from "firebase/auth";
+import { useRouter } from 'next/router';
+import axios from 'axios';
+import { redirect } from 'next/dist/server/api-utils';
 
 
 export default function Login(props) {
+  const router = useRouter();
 	const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -18,22 +20,24 @@ export default function Login(props) {
     const onSubmit = async (event) => {
         event.preventDefault();
         setIsLoading(true);
-      
+        const data  = {
+          email:email, 
+          password : password
+         }
         if (isSignupMode) {
-          createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-              // Signed in
-              const user = userCredential.user;
-              console.log("done");
-              // ...
+            const response = await fetch("http://localhost:8080/user/signup",{
+              method: "POST",
+            
+              headers :{
+                "Content-Type" : "application/json"
+              },
+              body: JSON.stringify(data)
             })
-            .catch((error) => {
-              const errorCode = error.code;
-              const errorMessage = error.message;
-              // ..
-              console.log(errorCode);
-              console.log(errorMessage);
-            });
+            console.log(response)
+            if( response.ok){
+          
+              router.push('/test');
+            }
         } else {
           // Handle login logic here using the existing firebase login method
           // For example, you can use `signInWithEmailAndPassword` method:

@@ -1,21 +1,41 @@
 const Userroute = require('express').Router();
-const User = require('../Model/User');
+//const User = require('../Model/User');
+const {auth} = require('../firebase/firebase')
+const {createUserWithEmailAndPassword}= require("firebase/auth");
 
 
 // add new user
-Userroute.post('/post', async (req, res)=>{
-
+Userroute.post('/signup', async (req, res)=>{
+    console.log(req.body.email, req.body.password)
     try {
-        console.log(req.body);
-        const newUser = new User({
-                userName: req.body.userName,
-                date:req.body.date,
-                email:req.body.email
-            })    
+        console.log(req.body.email, req.body.password)
+        createUserWithEmailAndPassword(auth, req.body.email, req.body.password)
+            .then((userCredential) => {
+              // Signed in
+              const user = userCredential.user;
+              console.log("done");
+              res.json("done")
+            })
+            .catch((error) => {
+              const errorCode = error.code;
+              const errorMessage = error.message;
+              // ..
+              console.log(errorCode);
+              console.log(errorMessage);
+              res.json("not done")
+            });
+
+        
+        // console.log(req.body);
+        // const newUser = new User({
+        //         userName: req.body.userName,
+        //         date:req.body.date,
+        //         email:req.body.email
+        //     })    
           
-        await newUser.save()
-        res.status(200).json(newUser);
-        console.log(newUser);
+        // await newUser.save()
+        // res.status(200).json(newUser);
+        // console.log(newUser);
     
     } catch (error) {
         console.log(error); 
@@ -24,25 +44,12 @@ Userroute.post('/post', async (req, res)=>{
 })
 
 
-// find all documents with username 
-Userroute.get('/get', async (req, res)=>{
-        
-    try{
-        const Alluser = await User.find({userName : req.body.userName});
-        res.status(200).json(Alluser)
-    } catch (error) {
-        res.json(error)
-        
-    }
-})
-
-
 // find user with id 
-Userroute.get('/get/:id', async (req, res)=>{
-    console.log(req.params.id);
+Userroute.post('/login', async (req, res)=>{
+    console.log(req.body.id);
     try{
-        const Alluser = await User.find({_id:req.params.id});
-        res.status(200).json(Alluser)
+        const user = await User.find({_id:req.body.id});
+        res.status(200).json(user)
     } catch (error) {
         res.json(error)
         
