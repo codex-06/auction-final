@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/router';
-import axios from 'axios';
-import { redirect } from 'next/dist/server/api-utils';
 
 
 export default function Login(props) {
@@ -11,7 +9,10 @@ export default function Login(props) {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSignupMode, setIsSignupMode] = useState(true); // New state variable to track form mode
-  
+    const [loginStatus, setLoginStatus] = useState(null);
+
+
+
     const toggleFormMode = () => {
       setIsSignupMode((prevMode) => !prevMode);
       setEmail('');
@@ -36,24 +37,26 @@ export default function Login(props) {
             console.log(response)
             if( response.ok){
           
-              router.push('/test');
+              router.push('/');
             }
         } else {
-          // Handle login logic here using the existing firebase login method
-          // For example, you can use `signInWithEmailAndPassword` method:
-          // signInWithEmailAndPassword(auth, email, password)
-          //   .then((userCredential) => {
-          //     const user = userCredential.user;
-          //     console.log("Logged in!");
-          //     // ...
-          //   })
-          //   .catch((error) => {
-          //     const errorCode = error.code;
-          //     const errorMessage = error.message;
-          //     console.log(errorCode);
-          //     console.log(errorMessage);
-          //   });
-        }
+          const response = await fetch("http://localhost:8080/user/login",{
+              method: "POST",
+            
+              headers :{
+                "Content-Type" : "application/json"
+              },
+              body: JSON.stringify(data)
+            })
+            console.log(response)
+            if( response.ok){
+          
+              router.push('/');
+            }
+            else{
+              setLoginStatus("error");
+            }
+          }
       
         setEmail('');
         setIsLoading(false);
@@ -83,16 +86,23 @@ export default function Login(props) {
 			<Image src={"/art5.webp"} width={900} height={900}></Image>
 		</div>
 		<div className="col-span-2">
+
+
 			<div className='py-14 relative text-center'>
 				<button onClick ={()=>{props.quit(false)}} className='absolute right-4 top-4 w-max'>
 					<svg className='' xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>
 				</button>
 				<h1 className=' text-center text-black text-2xl'> {isSignupMode ? 'Sign up and begin your treasure hunt.' : 'Welcome to LiveAuctioneers!'}</h1>
 			</div>
-			<form  onSubmit={ (e) =>onSubmit(e)}>
 
-			
-				<div className="mx-20 mb-10 ">
+      {isLoading ? (
+        <div className="text-center">
+          
+          <Image src={"loading.svg"} width={150} height={150} className='my-auto mx-auto'></Image>
+        </div>
+      ) : (
+        <form onSubmit={(e) => onSubmit(e)}>
+         <div className="mx-20 mb-10 ">
 					<label  className= "w-max text-gray-600 text-sm" htmlFor="email">EMAIL ADDRESS</label>
 					<input onChange={(event) => {setEmail(event.target.value)}} className='leading-10 border w-full mb-8' type="email" name="email" id="" />
 
@@ -110,16 +120,20 @@ export default function Login(props) {
 
 					<button type='submit'  className='text-center bg-red-800 w-full hover:bg-red-700 text-white leading-10'>{isSignupMode ? 'SIGNUP' : "LOGIN"}</button>
 
-                    <p className="text-center">{isSignupMode ? 'Already have an account?' : "Don't have an account?"}
-                        <button className = "mt-6   text-cyan-800 underline decoration-cyan-800 hover:text-cyan-700 hover:decoration-cyan-700 "onClick={toggleFormMode}>{isSignupMode ? 'LOGIN' : 'SIGNUP'}</button>
-                    </p>
+              <p className="text-center">{isSignupMode ? 'Already have an account?' : "Don't have an account?"}
+                  <button className = "mt-6   text-cyan-800 underline decoration-cyan-800 hover:text-cyan-700 hover:decoration-cyan-700 "onClick={toggleFormMode}>{isSignupMode ? 'LOGIN' : 'SIGNUP'}</button>
+              </p>
 				</div>
-			</form>
+        </form>
+      )}
+
+			
 		</div>
 
     <div>
     </div>
     </div>
+   
     </div>
   )
 }

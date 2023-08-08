@@ -1,7 +1,7 @@
 const Userroute = require('express').Router();
 //const User = require('../Model/User');
 const {auth} = require('../firebase/firebase')
-const {createUserWithEmailAndPassword}= require("firebase/auth");
+const {createUserWithEmailAndPassword, signInWithEmailAndPassword}= require("firebase/auth");
 
 
 // add new user
@@ -14,7 +14,7 @@ Userroute.post('/signup', async (req, res)=>{
               // Signed in
               const user = userCredential.user;
               console.log("done");
-              res.json("done")
+              res.json("logged in")
             })
             .catch((error) => {
               const errorCode = error.code;
@@ -22,7 +22,7 @@ Userroute.post('/signup', async (req, res)=>{
               // ..
               console.log(errorCode);
               console.log(errorMessage);
-              res.json("not done")
+              res.json(errorMessage)
             });
 
         
@@ -46,14 +46,42 @@ Userroute.post('/signup', async (req, res)=>{
 
 // find user with id 
 Userroute.post('/login', async (req, res)=>{
-    console.log(req.body.id);
-    try{
-        const user = await User.find({_id:req.body.id});
-        res.status(200).json(user)
-    } catch (error) {
-        res.json(error)
+    console.log(req.body.email, req.body.password)
+    try {
+        console.log(req.body.email, req.body.password)
+        signInWithEmailAndPassword(auth, req.body.email, req.body.password)
+            .then((userCredential) => {
+              // Signed in
+              const user = userCredential.user;
+              console.log("done");
+              res.json("signed in")
+            })
+            .catch((error) => {
+              const errorCode = error.code;
+              const errorMessage = error.message;
+              // ..
+              console.log(errorCode);
+              console.log(errorMessage);
+              res.json(errorMessage)
+            });
+
         
+        // console.log(req.body);
+        // const newUser = new User({
+        //         userName: req.body.userName,
+        //         date:req.body.date,
+        //         email:req.body.email
+        //     })    
+          
+        // await newUser.save()
+        // res.status(200).json(newUser);
+        // console.log(newUser);
+    
+    } catch (error) {
+        console.log(error); 
     }
+
+
 })
 
 
